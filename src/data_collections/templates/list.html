@@ -1,12 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    Hello world!
-</body>
-</html>
+{% extends 'index.html' %}
+{% load static %}
+{% block additional_headers %}
+<link rel="stylesheet" href="{% static 'css/collections-list.css' %}" type="text/css">
+{% endblock %}
+{% block content %}
+  <body>
+    <div class="collections-list-top">
+        <h3>Colletions</h3>
+        <button class="btn btn-warning">Fetch Dataset</button>
+    </div>
+    <div class="collections-table-wrapper">
+    <table class="collections-table">
+      <thead><th style="text-align: center; background: #DDD;"><h3>Collected Datasets<h3><th></thead>
+      <tbody>
+    {% for record in collections %}
+      <tr><td class="collections-table-row">{{ record.filename }} ({{ record.edited }})</td></tr>
+    {% endfor %}
+  </tbody>
+    </table>
+    </div>
+  </body>
+{% endblock %}

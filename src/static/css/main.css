@@ -1,0 +1,30 @@
+*{
+    padding: 0;
+    margin: 0;
+}
+
+.main-nav-bar{
+    height: 10%;
+    background: #444;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 10px
+}
+
+.main-content{
+    height: 90%;
+}
+
+.main-container{
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    gap: 10px;
+}
+
+.sw-logo-nav{
+    width: 10%;
+    height: 80%;
+}

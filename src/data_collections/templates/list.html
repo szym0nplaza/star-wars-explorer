@@ -7,17 +7,46 @@
   <body>
     <div class="collections-list-top">
         <h3>Colletions</h3>
-        <button class="btn btn-warning">Fetch Dataset</button>
+        <button class="btn btn-warning fetch-dataset">Fetch Dataset</button>
     </div>
     <div class="collections-table-wrapper">
     <table class="collections-table">
-      <thead><th style="text-align: center; background: #DDD;"><h3>Collected Datasets<h3><th></thead>
+      <thead><th class="collections-table-header"><h3>Collected Datasets<h3><th></thead>
       <tbody>
-    {% for record in collections %}
-      <tr><td class="collections-table-row">{{ record.filename }} ({{ record.edited }})</td></tr>
-    {% endfor %}
-  </tbody>
+        {{ collections|length }}
+      {% if collections|length > 0 %}
+      {% for record in collections %}
+        <tr>
+          <td class="collections-table-row">
+            <a href="{{ record.id }}">{{ record.filename }} ({{ record.edited }})</a>
+          </td>
+        </tr>
+      {% endfor %}
+      {% else %}
+      <tr>
+        <td class="collections-table-row">
+          <div>No available datasets.</div>
+        </td>
+      </tr>
+      {% endif %}
+      </tbody>
     </table>
     </div>
+    <script>
+      $(".fetch-dataset").on("click", ()=>fetchDefaultDataset())
+
+      const fetchDefaultDataset = async () =>{
+        const response = await fetch("/fetch-dataset/", {
+          method: "POST",
+          headers: {
+           'Content-Type': "application/json",
+           "X-CSRFToken": "{{ csrf_token }}"
+          }
+        })
+        if(response.status == 200){
+          window.location.reload()
+        }
+      }
+    </script>
   </body>
 {% endblock %}

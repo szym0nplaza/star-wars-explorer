@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 
 # Here are abstract classes for dependency inversion purpouse
 
-class ICollectionsRetreiver(ABC):
+class ICollectionsHandler(ABC):
     @abstractmethod
-    def retrieve_data(self) -> None:
+    def retrieve_data(self, page: int) -> None:
         raise NotImplementedError
     
     @abstractmethod

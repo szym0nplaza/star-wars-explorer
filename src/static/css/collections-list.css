@@ -29,3 +29,9 @@
     justify-content: center;
     width: 100%;
 }
+
+.collections-table-header{
+    text-align: center;
+    background: #DDD;
+    padding: 5px 0;
+}

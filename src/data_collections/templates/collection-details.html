@@ -52,16 +52,17 @@
         $(".dataset-spinner").hide()
 
         const fetchAdditionalDataset = async () =>{
+            const records = "{{ records }}"/1 + 1
           $(".dataset-spinner").show()
-          const response = await fetch(`/fetch-dataset/{{ dataset_id }}`, {
-            method: "PATCH",
+          const response = await fetch(`/fetch-dataset/{{ dataset_id }}?records=${records}`, {
+            method: "GET",
             headers: {
              'Content-Type': "application/json",
              "X-CSRFToken": "{{ csrf_token }}"
             }
           })
           if(response.status == 200){
-            window.location.reload()
+            window.location.replace(`/collections/{{ dataset_id }}?records=${records}`)
             $(".dataset-spinner").hide()
           }
         }

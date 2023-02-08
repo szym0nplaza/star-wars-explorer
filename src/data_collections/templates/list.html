@@ -20,7 +20,7 @@
       {% for record in collections %}
         <tr>
           <td class="collections-table-row">
-            <a href="/collections/{{ record.id }}">{{ record.filename }} ({{ record.edited }})</a>
+            <a href="/collections/{{ record.id }}?records=1">{{ record.filename }} ({{ record.edited }})</a>
           </td>
         </tr>
       {% endfor %}

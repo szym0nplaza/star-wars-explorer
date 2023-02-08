@@ -1,6 +1,6 @@
 from .interfaces import ICollectionsHandler, IDBRepository
-from .dto import CollectionDTO
-from typing import List, Tuple
+from .dto import CollectionDTO, DatasetDTO
+from typing import List
 
 
 class CollectionsService:
@@ -19,13 +19,17 @@ class CollectionsService:
             for record in qs
         ]  # map queryset to dto, separate presentation data from db
         return result
-    
-    def get_csv_data(self, id: int) -> Tuple:
+
+    def get_csv_data(self, id: int, records_count: int) -> DatasetDTO:
         filename = self._repo.get_filename(id)
-        dataset, headers = self._data_handler.get_csv_data(filename)
-        return dataset, filename, headers
-    
-    def retrieve_additional_pages(self, id: int) -> None:
+        dataset, headers = self._data_handler.get_csv_data(filename, records_count)
+        return DatasetDTO(
+            filename=filename, dataset=dataset, headers=headers, records=records_count
+        )
+
+    def retrieve_additional_records(self, id: int, records: int) -> None:
         chunk = self._repo.update_chunk_count(id)
+        if int(records) < chunk:
+            return
         filename = self._repo.get_filename(id)
         self._data_handler.retrieve_additional_pages(chunk, filename)

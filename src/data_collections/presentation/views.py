@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from data_collections.infrastructure.ext import CollectionsHandler, DBRepository
 from data_collections.application.services import CollectionsService
+from django.http import QueryDict
 
 
 class CollectionsList(TemplateView):
@@ -26,8 +27,9 @@ class DatasetFetchView(View):
         self._handler.retirieve_ext_data()
         return JsonResponse({"message": "ok"})
 
-    def patch(self, request, id):
-        self._handler.retrieve_additional_pages(id)
+    def get(self, request, id):
+        records = request.GET.get("records")
+        self._handler.retrieve_additional_records(id, records)
         return JsonResponse({"message": "ok"})
 
 
@@ -38,14 +40,16 @@ class CollectionDetails(TemplateView):
     )
 
     def get(self, request, id):
-        dataset, filename, headers = self._handler.get_csv_data(id)
+        records_count = int(request.GET.get("records"))
+        dto = self._handler.get_csv_data(id, records_count)
         return render(
             request,
             self.template_name,
             context={
-                "data": dataset,
-                "headers": headers,
-                "filename": filename,
+                "data": dto.dataset,
+                "headers": dto.headers,
+                "filename": dto.filename,
                 "dataset_id": id,
+                "records": dto.records
             },
         )

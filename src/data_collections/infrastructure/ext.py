@@ -73,9 +73,10 @@ class CollectionsHandler(ICollectionsHandler):
         table = self._prepare_for_csv(result)
         etl.appendcsv(table, settings.DATASET_DIR[0] + f"/{filename}")
 
-    def get_csv_data(self, filename: int):
+    def get_csv_data(self, filename: int, records_count: int):
+        records_count *= 10
         data = etl.fromcsv(settings.DATASET_DIR[0] + f"/{filename}")
-        adjusted_data = self._prepare_data_for_presentation(data[0], data[1:])
+        adjusted_data = self._prepare_data_for_presentation(data[0], data[1:records_count+1])
         return adjusted_data, data[0] # headers for table
         
 

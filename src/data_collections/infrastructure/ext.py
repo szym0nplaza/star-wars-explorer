@@ -1,30 +1,53 @@
 from data_collections.application.interfaces import ICollectionsHandler
 from data_collections.domain.models import Collection
+from django.db.models import QuerySet
 from django.conf import settings
+from datetime import datetime
 import petl as etl
 import requests
 import string
 import random
 
 
-class CollectionsHandler(ICollectionsHandler):
-    def _write_to_db(self, filename: str):
-        Collection.objects.create(filename=filename)
-        
+homeworlds_cache = {}  # We can use any cache tool like Redis
 
-    def _write_to_csv(self, data, filename):
-        table_data = [list(data[0].keys())[0:9]]
-        print(len(data))
+
+class CollectionsHandler(ICollectionsHandler):
+    def _write_to_db(self, filename: str) -> None:
+        Collection.objects.create(filename=filename)
+
+    def _process_homeworld_names(self, record: dict) -> dict:
+        homeworld = record.get("homeworld", "N/A")
+
+        # To prevent many requests we can cache retrieved planets names
+        # and use it to get value faster
+        if not homeworld in homeworlds_cache.keys():
+            mapped_name = requests.get(homeworld).json()
+            homeworlds_cache[homeworld] = mapped_name.get("name")
+
+        record["homeworld"] = homeworlds_cache.get(homeworld)
+        return record
+    
+    def _add_current_date(self, record: dict) -> dict:
+        today_date = datetime.today().date()
+        record["date"] = today_date
+        return record
+
+    def _write_to_csv(self, data: dict, filename: str) -> None:
+        table_data = [list(data[0].keys())[0:9] + ["date"]]
+
         for record in data:
-            print(list(record.values())[0])
-            table_data.append(list(record.values())[0:9])
+            data_to_process = {k: record[k] for k in list(record)[0:9]}
+            adjusted_record: dict = self._process_homeworld_names(data_to_process)
+            adjusted_record: dict = self._add_current_date(data_to_process)
+            table_data.append(list(adjusted_record.values()))
 
         table = etl.head(table_data, 10)
         etl.tocsv(table, settings.DATASET_DIR[0] + f"/{filename}")
 
-    def retrieve_data(self, page: int):
+    def retrieve_data(self, page: int) -> None:
         # Here we only want 1st page, because if for example
-        # endpoint will have 2000 pages in future then we 
+        # endpoint will have 2000 pages in future then we
         # will have to send 2000 requests
         result = requests.get(
             f"https://swapi.dev/api/people/?page={page}"
@@ -35,7 +58,7 @@ class CollectionsHandler(ICollectionsHandler):
         self._write_to_csv(result.get("results"), filename)
         self._write_to_db(filename)
 
-    def get_db_data(self):
+    def get_db_data(self) -> QuerySet:
         # here that line should be moved to repositories.py file
-        # but it's overkill for now 
+        # but it's overkill for now
         return Collection.objects.all().order_by("-edited")

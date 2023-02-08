@@ -41,7 +41,8 @@ class CollectionDetails(TemplateView):
 
     def get(self, request, id):
         records_count = int(request.GET.get("records"))
-        dto = self._handler.get_csv_data(id, records_count)
+        filters = request.GET.get("filters")
+        dto = self._handler.get_csv_data(id, records_count, filters)
         return render(
             request,
             self.template_name,
@@ -50,6 +51,8 @@ class CollectionDetails(TemplateView):
                 "headers": dto.headers,
                 "filename": dto.filename,
                 "dataset_id": id,
-                "records": dto.records
+                "records": dto.records,
+                "chosen_filters": filters,
+                "filters": dto.filters
             },
         )

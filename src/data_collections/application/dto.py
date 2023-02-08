@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 @dataclass
 class CollectionDTO:
@@ -13,3 +13,4 @@ class DatasetDTO:
     headers: List
     dataset: Dict
     records: int
+    filters: Tuple

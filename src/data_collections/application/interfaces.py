@@ -9,7 +9,7 @@ class ICollectionsHandler(ABC):
         raise NotImplementedError
     
     @abstractmethod
-    def get_csv_data(self, filename: str, records_count: int):
+    def get_csv_data(self, filename: str, records_count: int, filters: str):
         raise NotImplementedError
     
     @abstractmethod

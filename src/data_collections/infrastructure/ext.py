@@ -43,13 +43,6 @@ class CollectionsHandler(ICollectionsHandler):
         table = etl.head(table_data, 10)
         return table
 
-    def _prepare_data_for_presentation(self, headers, payload) -> List:
-        adjusted_data = []
-        for record in payload:
-            record_dict = dict((headers[i], record[i]) for i in range(len(record)))
-            adjusted_data.append(record_dict)
-        return adjusted_data
-
     def _make_request(self, page: int = 1) -> dict:
         # Here we only want 1st page, because if for example
         # endpoint will have 2000 pages in future then we
@@ -73,11 +66,15 @@ class CollectionsHandler(ICollectionsHandler):
         table = self._prepare_for_csv(result)
         etl.appendcsv(table, settings.DATASET_DIR[0] + f"/{filename}")
 
-    def get_csv_data(self, filename: int, records_count: int):
+    def get_csv_data(self, filename: int, records_count: int, filters: str):
         records_count *= 10
-        data = etl.fromcsv(settings.DATASET_DIR[0] + f"/{filename}")
-        adjusted_data = self._prepare_data_for_presentation(data[0], data[1:records_count+1])
-        return adjusted_data, data[0] # headers for table
+        base_data = etl.fromcsv(settings.DATASET_DIR[0] + f"/{filename}")
+        # petl.valuecounts
+        if not filters:
+            return {"payload": tuple(base_data[1:records_count+1]), "table_headers": base_data[0], "filters": base_data[0]}
+        else:
+            data = etl.cut(base_data, *filters.split(","))
+            return {"payload": tuple(data[1:records_count+1]), "table_headers": data[0], "filters": base_data[0]}
         
 
 class DBRepository(IDBRepository):

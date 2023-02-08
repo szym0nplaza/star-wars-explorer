@@ -20,11 +20,15 @@ class CollectionsService:
         ]  # map queryset to dto, separate presentation data from db
         return result
 
-    def get_csv_data(self, id: int, records_count: int) -> DatasetDTO:
+    def get_csv_data(self, id: int, records_count: int, filters: str) -> DatasetDTO:
         filename = self._repo.get_filename(id)
-        dataset, headers = self._data_handler.get_csv_data(filename, records_count)
+        csv_data = self._data_handler.get_csv_data(filename, records_count, filters)
         return DatasetDTO(
-            filename=filename, dataset=dataset, headers=headers, records=records_count
+            filename=filename,
+            dataset=csv_data.get("payload"),
+            headers=csv_data.get("table_headers"),
+            records=records_count,
+            filters=csv_data.get("filters"),
         )
 
     def retrieve_additional_records(self, id: int, records: int) -> None:

@@ -7,6 +7,13 @@
 <body>
     <div class="dataset-container">
     <div style="font-size: 20px; font-weight: 800;">{{ filename }}</div>
+    <div class="btn-group" role="group" aria-label="Basic example">
+      {% for record in filters %}
+        <button type="button" class="btn btn-secondary filter-btn" id="{{ record }}">
+          {{ record }}
+        </button>
+      {% endfor %}
+    </div>
     <table class="dataset-table table table-striped">
         <thead>
             <tr class="dataset-table-header">
@@ -21,16 +28,9 @@
         {% if data|length > 0 %}
         {% for record in data %}
             <tr>
-            <td class="dataset-table-row">{{ record.name }}</td>
-            <td class="dataset-table-row">{{ record.height }}</td>
-            <td class="dataset-table-row">{{ record.mass }}</td>
-            <td class="dataset-table-row">{{ record.hair_color }}</td>
-            <td class="dataset-table-row">{{ record.skin_color }}</td>
-            <td class="dataset-table-row">{{ record.eye_color }}</td>
-            <td class="dataset-table-row">{{ record.birth_year }}</td>
-            <td class="dataset-table-row">{{ record.gender }}</td>
-            <td class="dataset-table-row">{{ record.homeworld }}</td>
-            <td class="dataset-table-row">{{ record.date }}</td>
+              {% for item in record %}
+                <td class="dataset-table-row">{{ item }}</td>
+              {% endfor %}
             </tr>
         {% endfor %}
         {% else %}
@@ -48,8 +48,30 @@
     </div>
     </div>
     <script>
+        const chosenFilters = "{{ chosen_filters }}"
+        console.log(chosenFilters)
+        let filters = chosenFilters === "None" || chosenFilters === '' ? [] : [...chosenFilters.split(",")]
+
+        if(filters && !filters.includes('')){
+            filters.forEach((e)=>{
+            $(`#${e}`).css("background", "#222")
+          })
+        }
+
         $(".fetch-additional-dataset").on("click", ()=>fetchAdditionalDataset())
+        $(".filter-btn").on("click", (event)=>{
+          if(filters.includes(event.target.id))
+          {filters = filters.filter((e)=> e != event.target.id)}
+          else 
+          {filters.push(event.target.id)}
+          filterDataset()
+        })
         $(".dataset-spinner").hide()
+
+        const filterDataset = async () =>{
+          const records = "{{ records }}"/1
+          window.location.replace(`/collections/{{ dataset_id }}?records=${records}&filters=${filters.join(",")}`)
+        }
 
         const fetchAdditionalDataset = async () =>{
             const records = "{{ records }}"/1 + 1

@@ -8,6 +8,7 @@
     background: #444;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 0 10px;
     gap: 10px
 }
@@ -27,4 +28,25 @@
 .sw-logo-nav{
     width: 10%;
     height: 80%;
+}
+
+.sw-name{
+    margin-top: 10px;
+    font-family: 'Star Wars';
+    color: gold;
+}
+
+.nav-buttons{
+    padding-right: 30px;
+}
+
+.nav-item{
+    text-decoration: none;
+    font-size: 15px;
+    font-family: 'Star Wars';
+}
+
+.logo-wrapper{
+    display: flex;
+    gap: 10px;
 }

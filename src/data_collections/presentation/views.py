@@ -21,3 +21,7 @@ class DatasetFetchView(View):
     def post(self, request, *args, **kwargs):
         self._handler.retirieve_ext_data()
         return JsonResponse({"message": "ok"})
+
+
+class CollectionDetails(TemplateView):
+    template_name = "collection-details.html"

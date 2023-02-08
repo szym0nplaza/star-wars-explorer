@@ -13,7 +13,7 @@ class CollectionsService:
     def get_db_data(self) -> List[CollectionDTO]:
         qs = self._data_handler.get_db_data()
         result = [
-            CollectionDTO(filename=record.filename, edited=record.edited)
+            CollectionDTO(id=record.id, filename=record.filename, edited=record.edited)
             for record in qs
         ]  # map queryset to dto, separate presentation data from db
         return result

@@ -1,8 +1,9 @@
-from data_collections.application.interfaces import ICollectionsHandler
+from data_collections.application.interfaces import ICollectionsHandler, IDBRepository
 from data_collections.domain.models import Collection
 from django.db.models import QuerySet
 from django.conf import settings
 from datetime import datetime
+from typing import List
 import petl as etl
 import requests
 import string
@@ -13,9 +14,6 @@ homeworlds_cache = {}  # We can use any cache tool like Redis
 
 
 class CollectionsHandler(ICollectionsHandler):
-    def _write_to_db(self, filename: str) -> None:
-        Collection.objects.create(filename=filename)
-
     def _process_homeworld_names(self, record: dict) -> dict:
         homeworld = record.get("homeworld", "N/A")
 
@@ -45,7 +43,15 @@ class CollectionsHandler(ICollectionsHandler):
         table = etl.head(table_data, 10)
         etl.tocsv(table, settings.DATASET_DIR[0] + f"/{filename}")
 
-    def retrieve_data(self, page: int) -> None:
+    def _prepare_data_for_presentation(self, headers, payload) -> List:
+        adjusted_data = []
+        for record in payload:
+            record_dict = dict((headers[i], record[i]) for i in range(len(record)))
+            adjusted_data.append(record_dict)
+        return adjusted_data
+
+
+    def retrieve_data(self, page: int) -> str:
         # Here we only want 1st page, because if for example
         # endpoint will have 2000 pages in future then we
         # will have to send 2000 requests
@@ -56,9 +62,22 @@ class CollectionsHandler(ICollectionsHandler):
         filename = f"{random_string}.csv"
 
         self._write_to_csv(result.get("results"), filename)
-        self._write_to_db(filename)
+        return filename
+
+    def get_csv_data(self, filename: int):
+        data = etl.fromcsv(settings.DATASET_DIR[0] + f"/{filename}")
+        adjusted_data = self._prepare_data_for_presentation(data[0], data[1:])
+        return adjusted_data, data[0] # headers for table
+        
+
+class DBRepository(IDBRepository):
+    def write_to_db(self, filename: str) -> None:
+        Collection.objects.create(filename=filename)
 
     def get_db_data(self) -> QuerySet:
         # here that line should be moved to repositories.py file
         # but it's overkill for now
         return Collection.objects.all().order_by("-edited")
+    
+    def get_filename(self, id: int) -> str:
+        return Collection.objects.get(id=id).filename

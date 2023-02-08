@@ -1,10 +1,70 @@
 {% extends 'index.html' %}
 {% load static %}
 {% block additional_headers %}
-<link rel="stylesheet" href="{% static 'css/collections-list.css' %}" type="text/css">
+<link rel="stylesheet" href="{% static 'css/dataset-list.css' %}" type="text/css">
 {% endblock %}
 {% block content %}
 <body>
-    Hello
+    <div class="dataset-container">
+    <div style="font-size: 20px; font-weight: 800;">{{ filename }}</div>
+    <table class="dataset-table table table-striped">
+        <thead>
+            <tr class="dataset-table-header">
+            {% for record in headers %}
+            <th>
+                {{ record }}
+            </th>
+            {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+        {% if data|length > 0 %}
+        {% for record in data %}
+            <tr>
+            <td class="dataset-table-row">{{ record.name }}</td>
+            <td class="dataset-table-row">{{ record.height }}</td>
+            <td class="dataset-table-row">{{ record.mass }}</td>
+            <td class="dataset-table-row">{{ record.hair_color }}</td>
+            <td class="dataset-table-row">{{ record.skin_color }}</td>
+            <td class="dataset-table-row">{{ record.eye_color }}</td>
+            <td class="dataset-table-row">{{ record.birth_year }}</td>
+            <td class="dataset-table-row">{{ record.gender }}</td>
+            <td class="dataset-table-row">{{ record.homeworld }}</td>
+            <td class="dataset-table-row">{{ record.date }}</td>
+            </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td class="dataset-table-row">
+            <div>No available datasets.</div>
+            </td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+    <div style="display: flex; align-items: center; gap: 10px;">
+    <div class="spinner-border text-secondary dataset-spinner" role="status"></div>
+    <button class="btn btn-secondary">Load more</button>
+    </div>
+    </div>
+    <script>
+        $(".fetch-dataset").on("click", ()=>fetchDefaultDataset())
+        $(".dataset-spinner").hide()
+
+        const fetchDefaultDataset = async () =>{
+          $(".dataset-spinner").show()
+          const response = await fetch("/fetch-dataset/", {
+            method: "POST",
+            headers: {
+             'Content-Type': "application/json",
+             "X-CSRFToken": "{{ csrf_token }}"
+            }
+          })
+          if(response.status == 200){
+            window.location.reload()
+            $(".dataset-spinner").hide()
+          }
+        }
+      </script>
 </body>
 {% endblock %}

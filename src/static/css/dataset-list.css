@@ -1,0 +1,11 @@
+.dataset-table{
+    margin-top: 20px;
+    width: 90vw;
+    border: 2px solid gray;
+}
+
+.dataset-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

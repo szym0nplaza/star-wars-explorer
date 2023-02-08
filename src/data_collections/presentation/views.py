@@ -22,8 +22,12 @@ class DatasetFetchView(View):
         data_handler=CollectionsHandler(), repo=DBRepository()
     )
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         self._handler.retirieve_ext_data()
+        return JsonResponse({"message": "ok"})
+
+    def patch(self, request, id):
+        self._handler.retrieve_additional_pages(id)
         return JsonResponse({"message": "ok"})
 
 
@@ -38,5 +42,10 @@ class CollectionDetails(TemplateView):
         return render(
             request,
             self.template_name,
-            context={"data": dataset, "headers": headers, "filename": filename},
+            context={
+                "data": dataset,
+                "headers": headers,
+                "filename": filename,
+                "dataset_id": id,
+            },
         )

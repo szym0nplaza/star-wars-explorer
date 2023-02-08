@@ -31,7 +31,7 @@ class CollectionsHandler(ICollectionsHandler):
         record["date"] = today_date
         return record
 
-    def _write_to_csv(self, data: dict, filename: str) -> None:
+    def _prepare_for_csv(self, data: dict):
         table_data = [list(data[0].keys())[0:9] + ["date"]]
 
         for record in data:
@@ -41,7 +41,7 @@ class CollectionsHandler(ICollectionsHandler):
             table_data.append(list(adjusted_record.values()))
 
         table = etl.head(table_data, 10)
-        etl.tocsv(table, settings.DATASET_DIR[0] + f"/{filename}")
+        return table
 
     def _prepare_data_for_presentation(self, headers, payload) -> List:
         adjusted_data = []
@@ -50,19 +50,28 @@ class CollectionsHandler(ICollectionsHandler):
             adjusted_data.append(record_dict)
         return adjusted_data
 
-
-    def retrieve_data(self, page: int) -> str:
+    def _make_request(self, page: int = 1) -> dict:
         # Here we only want 1st page, because if for example
         # endpoint will have 2000 pages in future then we
         # will have to send 2000 requests
         result = requests.get(
             f"https://swapi.dev/api/people/?page={page}"
-        ).json()  # get data from API
+        ).json().get('results')  # get data from API
+        return result
+
+    def retrieve_data(self) -> str:
+        result: dict = self._make_request()
         random_string = "".join(random.choice(string.ascii_letters) for _ in range(24))
         filename = f"{random_string}.csv"
 
-        self._write_to_csv(result.get("results"), filename)
+        table = self._prepare_for_csv(result)
+        etl.tocsv(table, settings.DATASET_DIR[0] + f"/{filename}")
         return filename
+
+    def retrieve_additional_pages(self, chunk: int, filename: str):
+        result = self._make_request(chunk)
+        table = self._prepare_for_csv(result)
+        etl.appendcsv(table, settings.DATASET_DIR[0] + f"/{filename}")
 
     def get_csv_data(self, filename: int):
         data = etl.fromcsv(settings.DATASET_DIR[0] + f"/{filename}")
@@ -71,13 +80,20 @@ class CollectionsHandler(ICollectionsHandler):
         
 
 class DBRepository(IDBRepository):
+     # here that class should be moved to repositories.py file
+     # but it's overkill for now
+
     def write_to_db(self, filename: str) -> None:
         Collection.objects.create(filename=filename)
 
     def get_db_data(self) -> QuerySet:
-        # here that line should be moved to repositories.py file
-        # but it's overkill for now
         return Collection.objects.all().order_by("-edited")
     
     def get_filename(self, id: int) -> str:
         return Collection.objects.get(id=id).filename
+    
+    def update_chunk_count(self, id: int) -> int:
+        db_record = Collection.objects.get(id=id)
+        db_record.chunks += 1
+        db_record.save()
+        return db_record.chunks

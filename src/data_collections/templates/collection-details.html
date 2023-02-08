@@ -42,19 +42,19 @@
         {% endif %}
         </tbody>
     </table>
-    <div style="display: flex; align-items: center; gap: 10px;">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
     <div class="spinner-border text-secondary dataset-spinner" role="status"></div>
-    <button class="btn btn-secondary">Load more</button>
+    <button class="btn btn-secondary fetch-additional-dataset">Load more</button>
     </div>
     </div>
     <script>
-        $(".fetch-dataset").on("click", ()=>fetchDefaultDataset())
+        $(".fetch-additional-dataset").on("click", ()=>fetchAdditionalDataset())
         $(".dataset-spinner").hide()
 
-        const fetchDefaultDataset = async () =>{
+        const fetchAdditionalDataset = async () =>{
           $(".dataset-spinner").show()
-          const response = await fetch("/fetch-dataset/", {
-            method: "POST",
+          const response = await fetch(`/fetch-dataset/{{ dataset_id }}`, {
+            method: "PATCH",
             headers: {
              'Content-Type': "application/json",
              "X-CSRFToken": "{{ csrf_token }}"

@@ -5,10 +5,15 @@ from django.db.models import QuerySet
 
 class ICollectionsHandler(ABC):
     @abstractmethod
-    def retrieve_data(self, page: int) -> None:
+    def retrieve_data(self, page: int = 1) -> None:
         raise NotImplementedError
     
+    @abstractmethod
     def get_csv_data(self, filename: str):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def retrieve_additional_pages(self, chunk: int, filename: str):
         raise NotImplementedError
 
 
@@ -23,4 +28,8 @@ class IDBRepository(ABC):
     
     @abstractmethod
     def get_filename(self, id: int) -> str:
+        raise NotImplementedError
+    
+    @abstractmethod
+    def update_chunk_count(self, id: int) -> int:
         raise NotImplementedError

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Dict, Tuple
 
+
 @dataclass
 class CollectionDTO:
     id: int

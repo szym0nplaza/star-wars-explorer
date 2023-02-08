@@ -4,54 +4,53 @@
 <link rel="stylesheet" href="{% static 'css/collections-list.css' %}" type="text/css">
 {% endblock %}
 {% block content %}
-  <body>
-    <div class="collections-list-top">
-        <h3>Colletions</h3>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <div class="spinner-border text-secondary list-spinner" role="status"></div>
-        <button class="btn btn-warning fetch-dataset">Fetch Dataset</button>
-        </div>
-    </div>
-    <div class="collections-table-wrapper">
-    <table class="collections-table">
-      <thead><th class="collections-table-header"><h3>Collected Datasets<h3><th></thead>
-      <tbody>
-      {% if collections|length > 0 %}
-      {% for record in collections %}
-        <tr>
-          <td class="collections-table-row">
-            <a href="/collections/{{ record.id }}?records=1">{{ record.filename }} ({{ record.edited }})</a>
-          </td>
-        </tr>
-      {% endfor %}
-      {% else %}
+  <div class="collections-list-top">
+      <h3>Colletions</h3>
+      <div>Due to empty data storage first data fetches can take a while</div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div class="spinner-border text-secondary list-spinner" role="status"></div>
+      <button class="btn btn-warning fetch-dataset">Fetch Dataset</button>
+      </div>
+  </div>
+  <div class="collections-table-wrapper">
+  <table class="collections-table">
+    <thead><th class="collections-table-header"><h3>Collected Datasets<h3><th></thead>
+    <tbody>
+    {% if collections|length > 0 %}
+    {% for record in collections %}
       <tr>
         <td class="collections-table-row">
-          <div>No available datasets.</div>
+          <a href="/collections/{{ record.id }}?records=1">{{ record.filename }} ({{ record.edited }})</a>
         </td>
       </tr>
-      {% endif %}
-      </tbody>
-    </table>
-    </div>
-    <script>
-      $(".fetch-dataset").on("click", ()=>fetchDefaultDataset())
-      $(".list-spinner").hide()
+    {% endfor %}
+    {% else %}
+    <tr>
+      <td class="collections-table-row">
+        <div>No available datasets.</div>
+      </td>
+    </tr>
+    {% endif %}
+    </tbody>
+  </table>
+  </div>
+  <script>
+    $(".fetch-dataset").on("click", ()=>fetchDefaultDataset())
+    $(".list-spinner").hide()
 
-      const fetchDefaultDataset = async () =>{
-        $(".list-spinner").show()
-        const response = await fetch("/fetch-dataset/", {
-          method: "POST",
-          headers: {
-           'Content-Type': "application/json",
-           "X-CSRFToken": "{{ csrf_token }}"
-          }
-        })
-        if(response.status == 200){
-          window.location.reload()
-          $(".list-spinner").hide()
+    const fetchDefaultDataset = async () =>{
+      $(".list-spinner").show()
+      const response = await fetch("/fetch-dataset/", {
+        method: "POST",
+        headers: {
+          'Content-Type': "application/json",
+          "X-CSRFToken": "{{ csrf_token }}"
         }
+      })
+      if(response.status == 200){
+        window.location.reload()
+        $(".list-spinner").hide()
       }
-    </script>
-  </body>
+    }
+  </script>
 {% endblock %}

@@ -9,11 +9,11 @@ class ICollectionsHandler(ABC):
         raise NotImplementedError
     
     @abstractmethod
-    def get_csv_data(self, filename: str, records_count: int, filters: str):
+    def get_csv_data(self, filename: str, records_count: int, filters: str) -> dict:
         raise NotImplementedError
     
     @abstractmethod
-    def retrieve_additional_pages(self, chunk: int, filename: str):
+    def retrieve_additional_pages(self, chunk: int, filename: str) -> None:
         raise NotImplementedError
 
 

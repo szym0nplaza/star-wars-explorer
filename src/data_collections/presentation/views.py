@@ -4,7 +4,6 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from data_collections.infrastructure.ext import CollectionsHandler, DBRepository
 from data_collections.application.services import CollectionsService
-from django.http import QueryDict
 
 
 class CollectionsList(TemplateView):
@@ -23,7 +22,7 @@ class DatasetFetchView(View):
         data_handler=CollectionsHandler(), repo=DBRepository()
     )
 
-    def post(self, request):
+    def post(self, _request):
         self._handler.retirieve_ext_data()
         return JsonResponse({"message": "ok"})
 

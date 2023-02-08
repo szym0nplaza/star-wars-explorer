@@ -17,3 +17,8 @@ class Collection(models.Model):
         self.edited = datetime.now()
         self.save()
         return self.chunks
+    
+
+class Planets(models.Model):
+    url = models.CharField(max_length=255, db_index=True)
+    verbose_name = models.CharField(max_length=255)

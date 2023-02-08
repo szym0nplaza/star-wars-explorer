@@ -4,90 +4,88 @@
 <link rel="stylesheet" href="{% static 'css/dataset-list.css' %}" type="text/css">
 {% endblock %}
 {% block content %}
-<body>
-    <div class="dataset-container">
-    <div style="font-size: 20px; font-weight: 800;">{{ filename }}</div>
-    <div class="btn-group" role="group" aria-label="Basic example">
-      {% for record in filters %}
-        <button type="button" class="btn btn-secondary filter-btn" id="{{ record }}">
-          {{ record }}
-        </button>
-      {% endfor %}
-    </div>
-    <table class="dataset-table table table-striped">
-        <thead>
-            <tr class="dataset-table-header">
-            {% for record in headers %}
-            <th>
-                {{ record }}
-            </th>
+  <div class="dataset-container">
+  <div style="font-size: 20px; font-weight: 800;">{{ filename }}</div>
+  <div class="btn-group" role="group" aria-label="Basic example">
+    {% for record in filters %}
+      <button type="button" class="btn btn-secondary filter-btn" id="{{ record }}">
+        {{ record }}
+      </button>
+    {% endfor %}
+  </div>
+  <table class="dataset-table table table-striped">
+      <thead>
+          <tr class="dataset-table-header">
+          {% for record in headers %}
+          <th>
+              {{ record }}
+          </th>
+          {% endfor %}
+          </tr>
+      </thead>
+      <tbody>
+      {% if data|length > 0 %}
+      {% for record in data %}
+          <tr>
+            {% for item in record %}
+              <td class="dataset-table-row">{{ item }}</td>
             {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-        {% if data|length > 0 %}
-        {% for record in data %}
-            <tr>
-              {% for item in record %}
-                <td class="dataset-table-row">{{ item }}</td>
-              {% endfor %}
-            </tr>
-        {% endfor %}
-        {% else %}
-        <tr>
-            <td class="dataset-table-row">
-            <div>No available datasets.</div>
-            </td>
-        </tr>
-        {% endif %}
-        </tbody>
-    </table>
-    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-    <div class="spinner-border text-secondary dataset-spinner" role="status"></div>
-    <button class="btn btn-secondary fetch-additional-dataset">Load more</button>
-    </div>
-    </div>
-    <script>
-        const chosenFilters = "{{ chosen_filters }}"
-        console.log(chosenFilters)
-        let filters = chosenFilters === "None" || chosenFilters === '' ? [] : [...chosenFilters.split(",")]
+          </tr>
+      {% endfor %}
+      {% else %}
+      <tr>
+          <td class="dataset-table-row">
+          <div>No available datasets.</div>
+          </td>
+      </tr>
+      {% endif %}
+      </tbody>
+  </table>
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+  <div class="spinner-border text-secondary dataset-spinner" role="status"></div>
+  <button class="btn btn-secondary fetch-additional-dataset">Load more</button>
+  </div>
+  </div>
+  <script>
+      const chosenFilters = "{{ chosen_filters }}"
+      console.log(chosenFilters)
+      let filters = chosenFilters === "None" || chosenFilters === '' ? [] : [...chosenFilters.split(",")]
 
-        if(filters && !filters.includes('')){
-            filters.forEach((e)=>{
-            $(`#${e}`).css("background", "#222")
-          })
-        }
-
-        $(".fetch-additional-dataset").on("click", ()=>fetchAdditionalDataset())
-        $(".filter-btn").on("click", (event)=>{
-          if(filters.includes(event.target.id))
-          {filters = filters.filter((e)=> e != event.target.id)}
-          else 
-          {filters.push(event.target.id)}
-          filterDataset()
+      if(filters && !filters.includes('')){
+          filters.forEach((e)=>{
+          $(`#${e}`).css("background", "#222")
         })
-        $(".dataset-spinner").hide()
+      }
 
-        const filterDataset = async () =>{
-          const records = "{{ records }}"/1
-          window.location.replace(`/collections/{{ dataset_id }}?records=${records}&filters=${filters.join(",")}`)
-        }
+      $(".fetch-additional-dataset").on("click", ()=>fetchAdditionalDataset())
+      $(".filter-btn").on("click", (event)=>{
+        if(filters.includes(event.target.id))
+        {filters = filters.filter((e)=> e != event.target.id)}
+        else 
+        {filters.push(event.target.id)}
+        filterDataset()
+      })
+      $(".dataset-spinner").hide()
 
-        const fetchAdditionalDataset = async () =>{
-            const records = "{{ records }}"/1 + 1
-          $(".dataset-spinner").show()
-          const response = await fetch(`/fetch-dataset/{{ dataset_id }}?records=${records}`, {
-            method: "GET",
-            headers: {
-             'Content-Type': "application/json",
-             "X-CSRFToken": "{{ csrf_token }}"
-            }
-          })
-          if(response.status == 200){
-            window.location.replace(`/collections/{{ dataset_id }}?records=${records}`)
-            $(".dataset-spinner").hide()
+      const filterDataset = async () =>{
+        const records = "{{ records }}"/1
+        window.location.replace(`/collections/{{ dataset_id }}?records=${records}&filters=${filters.join(",")}`)
+      }
+
+      const fetchAdditionalDataset = async () =>{
+          const records = "{{ records }}"/1 + 1
+        $(".dataset-spinner").show()
+        const response = await fetch(`/fetch-dataset/{{ dataset_id }}?records=${records}`, {
+          method: "GET",
+          headers: {
+            'Content-Type': "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
           }
+        })
+        if(response.status == 200){
+          window.location.replace(`/collections/{{ dataset_id }}?records=${records}`)
+          $(".dataset-spinner").hide()
         }
-      </script>
-</body>
+      }
+    </script>
 {% endblock %}

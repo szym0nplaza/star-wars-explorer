@@ -4,6 +4,9 @@ from typing import List
 
 
 class CollectionsService:
+    # This module uses dependency inversion, in future we can test
+    # this class with mock adapters which inherit Interfaces
+
     def __init__(self, data_handler: ICollectionsHandler, repo: IDBRepository) -> None:
         self._data_handler = data_handler
         self._repo = repo
@@ -37,4 +40,6 @@ class CollectionsService:
             return
         chunk = self._repo.update_record(id)
         filename = self._repo.get_filename(id)
-        self._data_handler.retrieve_additional_pages(chunk, filename)
+        self._data_handler.retrieve_additional_pages(
+            chunk, filename
+        )  # get and append data to existent csv file

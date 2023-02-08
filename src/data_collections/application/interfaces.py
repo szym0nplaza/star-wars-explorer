@@ -31,5 +31,9 @@ class IDBRepository(ABC):
         raise NotImplementedError
     
     @abstractmethod
-    def update_chunk_count(self, id: int) -> int:
+    def update_record(self, id: int) -> int:
+        raise NotImplementedError
+    
+    @abstractmethod
+    def get_chunks(self, id: int) -> int:
         raise NotImplementedError

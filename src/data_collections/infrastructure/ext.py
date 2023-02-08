@@ -93,8 +93,10 @@ class DBRepository(IDBRepository):
     def get_filename(self, id: int) -> str:
         return Collection.objects.get(id=id).filename
     
-    def update_chunk_count(self, id: int) -> int:
+    def update_record(self, id: int) -> int:
         db_record = Collection.objects.get(id=id)
-        db_record.chunks += 1
-        db_record.save()
+        db_record.update_record()
         return db_record.chunks
+    
+    def get_chunks(self, id: int) -> int:
+        return Collection.objects.get(id=id).chunks

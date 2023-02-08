@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime
 
 
 # Django is highly coupled with db by default
@@ -10,3 +11,9 @@ class Collection(models.Model):
     filename = models.CharField(max_length=255)
     edited = models.DateTimeField(auto_now_add=True)
     chunks = models.IntegerField(default=1)
+
+    def update_record(self):
+        self.chunks += 1
+        self.edited = datetime.now()
+        self.save()
+        return self.chunks

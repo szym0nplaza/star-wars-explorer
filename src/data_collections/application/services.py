@@ -28,8 +28,9 @@ class CollectionsService:
         )
 
     def retrieve_additional_records(self, id: int, records: int) -> None:
-        chunk = self._repo.update_chunk_count(id)
-        if int(records) < chunk:
+        chunks = self._repo.get_chunks(id)
+        if int(records) <= chunks:
             return
+        chunk = self._repo.update_record(id)
         filename = self._repo.get_filename(id)
         self._data_handler.retrieve_additional_pages(chunk, filename)

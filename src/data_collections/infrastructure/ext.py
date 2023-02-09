@@ -3,7 +3,6 @@ from data_collections.domain.models import Collection, Planets
 from django.db.models import QuerySet
 from django.conf import settings
 from datetime import datetime
-from typing import List
 import petl as etl
 import requests
 import string
@@ -11,7 +10,7 @@ import random
 
 
 class CollectionsHandler(ICollectionsHandler):
-    def _make_request(self, content: str) -> tuple:
+    def _make_request(self, content: str) -> list:
         result = requests.get(
             f"https://swapi.dev/api/{content}/?page=1"
         ).json()  # get first page from API
@@ -23,25 +22,17 @@ class CollectionsHandler(ICollectionsHandler):
             next_page_data = requests.get(result.get("next")).json()
             result = requests.get(result.get("next")).json()
             collected_data = [*collected_data, *next_page_data.get("results")]
+        return collected_data
 
-        return collected_data, result.get("count")
-
-    def _process_homeworld_names(self, record: dict) -> dict:
-        homeworld_url = record.get("homeworld", "N/A")
-
+    def _process_homeworld_names(self, homeworld_url: str) -> str:
         # To prevent many requests we can store in db retrieved
         # planets names and use it to get value faster.
         # I wondered if cache will be better for it, but
         # for large amounts of data db will perform better.
-        planets_count = requests.get(
-            "https://swapi.dev/api/planets/?page=1"
-        ).json().get("count")
 
-        if planets_count != Planets.objects.all().count(): # Check if planets are loaded
-            # For future I will have to adjust it if one
-            # single planet is added, right now it will download all,
+        if not Planets.objects.all(): # Check if planets are loaded
             # maybe it's worth to move it to some signal to call it once
-            collected_data, _count = self._make_request("planets")
+            collected_data = self._make_request("planets")
             processed_data = [
                 Planets(verbose_name=record.get("name"), url=record.get("url"))
                 for record in collected_data
@@ -50,40 +41,34 @@ class CollectionsHandler(ICollectionsHandler):
             Planets.objects.bulk_create(processed_data)
 
         try:
-            verbose_planet_name = Planets.objects.get(url=homeworld_url)
+            verbose_planet_name = Planets.objects.get(url=homeworld_url).verbose_name
         except Planets.DoesNotExist:
             mapped_name = requests.get(homeworld_url).json()
             verbose_planet_name = Planets.objects.create(
                 url=homeworld_url, verbose_name=mapped_name.get("name")
-            )
+            ).verbose_name
 
-        record["homeworld"] = verbose_planet_name.verbose_name
-        return record
+        return verbose_planet_name
 
-    def _add_current_date(self, record: dict) -> dict:
-        today_date = datetime.today().date()
-        record["date"] = today_date
-        return record
-
-    def _prepare_for_csv(self, data: dict, pages: int) -> etl.Table:
+    def _prepare_for_csv(self, data: dict) -> etl.Table:
         # process and prepare data for csv file
-
-        for i, record in enumerate(data):
-            data[i] = {k: record[k] for k in list(record)[0:9]}
-            data[i] = self._process_homeworld_names(data[i])
-            data[i] = self._add_current_date(data[i])
+        table_headers = list(data[0].keys())[0:9]
+        today_date = datetime.today().date()
 
         table = etl.fromdicts(data)
+        table = etl.cut(table, table_headers)
+        table = etl.addfield(table, "date", today_date)
+        table = etl.convert(table, "homeworld", self._process_homeworld_names)
         return table
 
     def retrieve_data(self) -> str:
-        collected_data, count = self._make_request("people")
+        collected_data = self._make_request("people")
         random_string = "".join(
             random.choice(string.ascii_letters) for _ in range(24)
         )  # Generates random filename
         filename = f"{random_string}.csv"
 
-        table = self._prepare_for_csv(collected_data, count)
+        table = self._prepare_for_csv(collected_data)
         etl.tocsv(table, settings.DATASET_DIR[0] + f"/{filename}")
         return filename
 

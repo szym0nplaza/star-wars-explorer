@@ -41,12 +41,8 @@ class CollectionDetails(TemplateView):
             request,
             self.template_name,
             context={
-                "data": dto.dataset,
-                "headers": dto.headers,
-                "filename": dto.filename,
+                **dto.__dict__,
                 "dataset_id": id,
-                "records": dto.records,
                 "chosen_filters": filters,
-                "filters": dto.filters
             },
         )

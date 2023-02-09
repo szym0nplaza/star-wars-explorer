@@ -22,6 +22,7 @@ class CollectionsHandler(ICollectionsHandler):
             next_page_data = requests.get(result.get("next")).json()
             result = requests.get(result.get("next")).json()
             collected_data = [*collected_data, *next_page_data.get("results")]
+            print("here")
         return collected_data
 
     def _process_homeworld_names(self, homeworld_url: str) -> str:
@@ -30,7 +31,7 @@ class CollectionsHandler(ICollectionsHandler):
         # I wondered if cache will be better for it, but
         # for large amounts of data db will perform better.
 
-        if not Planets.objects.all(): # Check if planets are loaded
+        if not Planets.objects.all():  # Check if planets are loaded
             # maybe it's worth to move it to some signal to call it once
             collected_data = self._make_request("planets")
             processed_data = [
@@ -115,17 +116,3 @@ class DBRepository(IDBRepository):
 
     def get_filename(self, id: int) -> str:
         return Collection.objects.get(id=id).filename
-
-    def update_record(self, id: int) -> int:
-        """
-        Updates db record, increments chunks by 1 and changes edited date
-        """
-        db_record = Collection.objects.get(id=id)
-        db_record.update_record()
-        return db_record.chunks
-
-    def get_chunks(self, id: int) -> int:
-        # This is here because I tested case when firstly
-        # we load 1 page and each time we click load more
-        # new data appends to csv (if is not retrieved yet)
-        return Collection.objects.get(id=id).chunks

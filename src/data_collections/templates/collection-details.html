@@ -24,8 +24,8 @@
           </tr>
       </thead>
       <tbody>
-      {% if data|length > 0 %}
-      {% for record in data %}
+      {% if dataset|length > 0 %}
+      {% for record in dataset %}
           <tr>
             {% for item in record %}
               <td class="dataset-table-row">{{ item }}</td>

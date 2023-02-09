@@ -19,10 +19,11 @@ class CollectionsHandler(ICollectionsHandler):
         while result.get(
             "next"
         ):  # Due to specific api, we have to go page by page to collect data, In future we can move it to celery.
+            print("Requesting API...")
             next_page_data = requests.get(result.get("next")).json()
-            result = requests.get(result.get("next")).json()
+            print("Data retrieved.")
+            result = next_page_data
             collected_data = [*collected_data, *next_page_data.get("results")]
-            print("here")
         return collected_data
 
     def _process_homeworld_names(self, homeworld_url: str) -> str:

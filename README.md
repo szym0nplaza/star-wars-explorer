@@ -30,6 +30,7 @@ Required Python version: **3.9**
 **Note!**
 
 If there will be any problems try to set ```export PYTHONPATH=./src``` for your local env in your terminal
+(can occur during migrations)
 
 1. Create virtual enviroment (```python -m venv env```)
 2. Install requirements (```env/bin/pip install -r requirements/base.txt```)

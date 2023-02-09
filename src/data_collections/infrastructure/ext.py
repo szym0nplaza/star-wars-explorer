@@ -11,6 +11,21 @@ import random
 
 
 class CollectionsHandler(ICollectionsHandler):
+    def _make_request(self, content: str) -> tuple:
+        result = requests.get(
+            f"https://swapi.dev/api/{content}/?page=1"
+        ).json()  # get first page from API
+
+        collected_data = [*result.get("results")]
+        while result.get(
+            "next"
+        ):  # Due to specific api, we have to go page by page to collect data, In future we can move it to celery.
+            next_page_data = requests.get(result.get("next")).json()
+            result = requests.get(result.get("next")).json()
+            collected_data = [*collected_data, *next_page_data.get("results")]
+
+        return collected_data, result.get("count")
+
     def _process_homeworld_names(self, record: dict) -> dict:
         homeworld_url = record.get("homeworld", "N/A")
 
@@ -18,9 +33,22 @@ class CollectionsHandler(ICollectionsHandler):
         # planets names and use it to get value faster.
         # I wondered if cache will be better for it, but
         # for large amounts of data db will perform better.
-        # This function causes biggest bottleneck in data retrieving process.
-        # Of course we can request full pages but if our item is on page 123
-        # we will have to request API 123 times to map it.
+        planets_count = requests.get(
+            "https://swapi.dev/api/planets/?page=1"
+        ).json().get("count")
+
+        if planets_count != Planets.objects.all().count(): # Check if planets are loaded
+            # For future I will have to adjust it if one
+            # single planet is added, right now it will download all,
+            # maybe it's worth to move it to some signal to call it once
+            collected_data, _count = self._make_request("planets")
+            processed_data = [
+                Planets(verbose_name=record.get("name"), url=record.get("url"))
+                for record in collected_data
+            ]
+
+            Planets.objects.bulk_create(processed_data)
+
         try:
             verbose_planet_name = Planets.objects.get(url=homeworld_url)
         except Planets.DoesNotExist:
@@ -37,47 +65,27 @@ class CollectionsHandler(ICollectionsHandler):
         record["date"] = today_date
         return record
 
-    def _prepare_for_csv(self, data: dict) -> etl.Table:
+    def _prepare_for_csv(self, data: dict, pages: int) -> etl.Table:
         # process and prepare data for csv file
-        table_data = [list(data[0].keys())[0:9] + ["date"]]
 
-        for record in data:
-            data_to_process = {k: record[k] for k in list(record)[0:9]}
-            adjusted_record: dict = self._process_homeworld_names(data_to_process)
-            adjusted_record: dict = self._add_current_date(data_to_process)
-            table_data.append(list(adjusted_record.values()))
+        for i, record in enumerate(data):
+            data[i] = {k: record[k] for k in list(record)[0:9]}
+            data[i] = self._process_homeworld_names(data[i])
+            data[i] = self._add_current_date(data[i])
 
-        table = etl.head(table_data, 10)
+        table = etl.fromdicts(data)
         return table
 
-    def _make_request(self, page: int = 1) -> dict:
-        # Here we only want 1st page, because if for example
-        # endpoint will have 2000 pages in future then we
-        # will have to send 2000 requests
-        result = (
-            requests.get(f"https://swapi.dev/api/people/?page={page}")
-            .json()
-            .get("results")
-        )  # get data from API
-        return result
-
     def retrieve_data(self) -> str:
-        # Get 1st 10 records of dataset
-        api_result: dict = self._make_request()  # Make request to API
+        collected_data, count = self._make_request("people")
         random_string = "".join(
             random.choice(string.ascii_letters) for _ in range(24)
         )  # Generates random filename
         filename = f"{random_string}.csv"
 
-        table = self._prepare_for_csv(api_result)
+        table = self._prepare_for_csv(collected_data, count)
         etl.tocsv(table, settings.DATASET_DIR[0] + f"/{filename}")
         return filename
-
-    def retrieve_additional_pages(self, chunk: int, filename: str) -> None:
-        # Get another pages of data and append it to csv
-        result = self._make_request(chunk)
-        table = self._prepare_for_csv(result)
-        etl.appendcsv(table, settings.DATASET_DIR[0] + f"/{filename}")
 
     def get_csv_data(self, filename: int, records_count: int, filters: str) -> dict:
         """Gets transformed data from csv file."""
@@ -132,4 +140,7 @@ class DBRepository(IDBRepository):
         return db_record.chunks
 
     def get_chunks(self, id: int) -> int:
+        # This is here because I tested case when firstly
+        # we load 1 page and each time we click load more
+        # new data appends to csv (if is not retrieved yet)
         return Collection.objects.get(id=id).chunks

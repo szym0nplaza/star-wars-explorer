@@ -33,13 +33,3 @@ class CollectionsService:
             records=records_count,
             filters=csv_data.get("filters"),
         )
-
-    def retrieve_additional_records(self, id: int, records: int) -> None:
-        chunks = self._repo.get_chunks(id)
-        if int(records) <= chunks:
-            return
-        chunk = self._repo.update_record(id)
-        filename = self._repo.get_filename(id)
-        self._data_handler.retrieve_additional_pages(
-            chunk, filename
-        )  # get and append data to existent csv file

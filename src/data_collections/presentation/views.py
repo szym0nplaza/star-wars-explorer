@@ -26,11 +26,6 @@ class DatasetFetchView(View):
         self._handler.retirieve_ext_data()
         return JsonResponse({"message": "ok"})
 
-    def get(self, request, id):
-        records = request.GET.get("records")
-        self._handler.retrieve_additional_records(id, records)
-        return JsonResponse({"message": "ok"})
-
 
 class CollectionDetails(TemplateView):
     template_name = "collection-details.html"

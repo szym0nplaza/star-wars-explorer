@@ -1,4 +1,4 @@
-# star-wars-explorer
+# Star Wars explorer
 
 - [Introdution](#introdution)
 - [Plans to optimize app](#for-future)
@@ -35,3 +35,6 @@ If there will be any problems try to set ```export PYTHONPATH=./src``` for your 
 2. Install requirements (```env/bin/pip install requirements/base.txt```)
 3. Run migrations to db (```env/bin/python manage.py migrate```)
 4. Run app (```python manage.py runserver```)
+
+## Screenshots
+![Alt text](https://github.com/szym0nplaza/star-wars-explorer/blob/main/screenshots/s2.png)

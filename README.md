@@ -32,9 +32,9 @@ Required Python version: **3.9**
 If there will be any problems try to set ```export PYTHONPATH=./src``` for your local env in your terminal
 
 1. Create virtual enviroment (```python -m venv env```)
-2. Install requirements (```env/bin/pip install requirements/base.txt```)
+2. Install requirements (```env/bin/pip install -r requirements/base.txt```)
 3. Run migrations to db (```env/bin/python manage.py migrate```)
-4. Run app (```python manage.py runserver```)
+4. Run app (```env/bin/python manage.py runserver```)
 
 ## Screenshots
 ![Alt text](https://github.com/szym0nplaza/star-wars-explorer/blob/main/screenshots/s2.png)

@@ -7,6 +7,7 @@ contourpy==1.0.7
 cycler==0.11.0
 Django==4.1.6
 fonttools==4.38.0
+gunicorn==20.1.0
 idna==3.4
 importlib-resources==5.12.0
 kiwisolver==1.4.4

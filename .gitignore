@@ -10,6 +10,7 @@ __pycache__/
 datasets/
 .env
 local_settings.py
+staticfiles
 
 # Distribution / packaging
 .Python

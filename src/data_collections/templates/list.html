@@ -41,7 +41,7 @@
     const fetchDefaultDataset = async () =>{
       $(".list-spinner").show()
       const response = await fetch("/fetch-dataset/", {
-        method: "POST",
+        method: "GET",
         headers: {
           'Content-Type': "application/json",
           "X-CSRFToken": "{{ csrf_token }}"

@@ -12,6 +12,8 @@ services:
 
   web:
     build: .
+    volumes:
+      - static_volume:/src/src/staticfiles
     depends_on:
       - db
     command: sh -c "python manage.py migrate &&
@@ -19,7 +21,17 @@ services:
                     gunicorn --bind 0.0.0.0:8000 src.config.wsgi:application"
     environment:
       - PYTHONPATH=./src
+    expose:
+      - 8000
+  
+  nginx:
+    build: ./nginx
     volumes:
-      - .:/src
+      - static_volume:/src/src/staticfiles
     ports:
-      - "8000:8000"
+      - 8000:8000
+    depends_on:
+      - web
+
+volumes:
+  static_volume:

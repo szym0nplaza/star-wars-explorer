@@ -26,8 +26,21 @@ SECRET_KEY = 'v48nz%3hz@@0)b6hv$tozl6%+z$8kx8#@2^-w6zw_ld9a@eqfq'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["0.0.0.0"]
+ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1"]
+CORS_ORIGIN_WHITELIST = [
+    'http://0.0.0.0:80',
+    'http://0.0.0.0:8000',
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+    'http://45.141.0.128:80',
+]
 
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_HEADERS = ['authorization', 'content-type']
+
+SECURE_CONTENT_TYPE_NOSNIFF = False
 
 # Application definition
 
@@ -39,6 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -109,6 +123,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
 )
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 DATASET_DIR = os.path.join(BASE_DIR, "static", "datasets"),
 if not os.path.exists(DATASET_DIR[0]):
     os.makedirs(DATASET_DIR[0])

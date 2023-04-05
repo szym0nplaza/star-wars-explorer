@@ -22,7 +22,7 @@ class DatasetFetchView(View):
         data_handler=CollectionsHandler(), repo=DBRepository()
     )
 
-    def post(self, _request):
+    def get(self, _request):
         self._handler.retirieve_ext_data()
         return JsonResponse({"message": "ok"})
 
